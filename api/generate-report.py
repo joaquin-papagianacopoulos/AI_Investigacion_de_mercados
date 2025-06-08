@@ -149,6 +149,43 @@ def generar_informe_crewai(contexto, teoria):
         
     except Exception as e:
         raise Exception(f"Error en CrewAI: {str(e)}")
+    # Función para usar con Flask
+def handler_logic(contexto, teoria):
+    """
+    Extrae la lógica de CrewAI del handler HTTP original
+    para usarla con Flask
+    """
+    # Aquí va tu lógica actual de CrewAI
+    # Por ejemplo:
+    
+    import os
+    from crewai import Agent, Task, Crew, LLM
+    
+    # Tu código de CrewAI aquí...
+    # Retorna el informe generado
+    # Crear y ejecutar el crew
+    crew = agentes(contexto, teoria)
+    result = crew.kickoff()
+        
+    # Convertir el resultado a string si es necesario
+    informe = str(result)
+        
+    informe_final = f"""# Informe Académico de Publicidad - UADE
+
+**Contexto:** {contexto}
+**Marco Teórico:** {teoria}
+**Fecha de generación:** {__import__('datetime').datetime.now().strftime('%d/%m/%Y %H:%M')}
+
+---
+
+{informe}
+
+---
+
+*Informe generado mediante sistema multi-agente especializado en investigación publicitaria académica.*
+"""
+        
+    return informe_final # Reemplaza con tu lógica real
 
 # Función adicional para testing local
 if __name__ == "__main__":

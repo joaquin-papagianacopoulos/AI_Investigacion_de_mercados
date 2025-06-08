@@ -1,4 +1,6 @@
+flask==3.0.0
 crewai==0.35.5
 groq==0.4.1
 python-dotenv==1.0.0
 requests==2.31.0
+gunicorn==21.2.0
