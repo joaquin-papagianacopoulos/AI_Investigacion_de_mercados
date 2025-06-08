@@ -811,8 +811,8 @@
             // Desarrollo local con Vercel CLI
             // endpoint: 'http://localhost:3000/api/generate-report',
             
-            // Mock para demo (cambiar a false cuando tengas la API lista)
-            useMock: true  // Cambiar a false después del deploy
+            // CAMBIADO: Desactivar mock para usar CrewAI real
+            useMock: false  // ¡Ahora usa la API real de CrewAI!
         };
 
         function toggleInstructions() {
@@ -1077,6 +1077,8 @@ La implementación efectiva de sistemas de medición KPI requiere:
 **Marco teórico:** ${teoria}`;
             }
 
+            console.log('🚀 Enviando solicitud a CrewAI:', { contexto, teoria });
+
             try {
                 const response = await fetch(API_CONFIG.endpoint, {
                     method: 'POST',
@@ -1089,64 +1091,93 @@ La implementación efectiva de sistemas de medición KPI requiere:
                     })
                 });
 
+                console.log('📡 Respuesta recibida:', response.status, response.statusText);
+
                 if (!response.ok) {
-                    throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
+                    const errorText = await response.text();
+                    console.error('❌ Error del servidor:', errorText);
+                    throw new Error(`Error HTTP ${response.status}: ${response.statusText}\n\nDetalles: ${errorText}`);
                 }
 
                 const data = await response.json();
+                console.log('✅ Datos procesados:', data);
                 
                 // Verificar si la respuesta es exitosa
                 if (!data.success) {
                     throw new Error(data.error || 'Error desconocido del servidor');
                 }
                 
-                return data.informe || 'Error: Informe vacío recibido del servidor';
+                return data.informe || data.report || 'Error: Informe vacío recibido del servidor';
                 
             } catch (error) {
-                console.error('Error calling API:', error);
+                console.error('💥 Error completo:', error);
                 
-                // Mensajes de error más específicos
+                // Mensajes de error más específicos y útiles
                 if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    return `# ❌ Error de Conexión
+                    return `# ❌ Error de Conexión con CrewAI
 
-No se pudo conectar con el servidor. Esto puede deberse a:
+No se pudo conectar con el servidor de CrewAI.
 
-## 🔧 Para desarrolladores:
-- El servidor Vercel no está disponible
-- Error en la URL del endpoint
-- Problemas de CORS
-- La función serverless tiene errores
+## 🔧 **Configuración necesaria:**
 
-**URL actual:** \`${API_CONFIG.endpoint}\`
+### 1. **Endpoint de la API**
+Actualmente configurado: \`${API_CONFIG.endpoint}\`
 
-## 💡 Soluciones:
-1. Verifica que la API esté desplegada en Vercel
-2. Revisa los logs en el dashboard de Vercel
-3. Confirma que GROQ_API_KEY esté configurada
-4. Prueba el endpoint directamente en el navegador
+**¿Es esta la URL correcta de tu proyecto Vercel?**
 
-## 🔄 Modo desarrollo:
-Si estás desarrollando localmente, ejecuta \`vercel dev\` y cambia el endpoint a \`http://localhost:3000/api/generate-report\``;
+### 2. **Variables de entorno requeridas:**
+- \`GROQ_API_KEY\`: Tu clave API de Groq
+- \`OPENAI_API_KEY\`: Tu clave API de OpenAI (si la usas)
+
+### 3. **Verifica en Vercel:**
+- Proyecto desplegado correctamente
+- Variables de entorno configuradas
+- Logs del proyecto sin errores
+
+## 🛠️ **Soluciones rápidas:**
+
+1. **Cambiar endpoint**: Edita la línea que dice \`endpoint: 'https://tu-proyecto.vercel.app/api/generate-report'\`
+2. **Modo desarrollo**: Si desarrollas localmente, usa \`http://localhost:3000/api/generate-report\`
+3. **Verificar CrewAI**: Asegúrate de que tu función \`/api/generate-report\` esté funcionando
+
+## 🔄 **Para testing:**
+Puedes activar el modo mock temporalmente cambiando \`useMock: false\` a \`useMock: true\``;
                 }
 
-                return `# ❌ Error al Generar el Informe
+                return `# ❌ Error al Generar el Informe con CrewAI
 
 **Error:** ${error.message}
 
-## Detalles técnicos:
-- **Endpoint:** \`${API_CONFIG.endpoint}\`
+## 📊 **Detalles técnicos:**
+- **Endpoint configurado:** \`${API_CONFIG.endpoint}\`
 - **Tipo de error:** ${error.name}
+- **Contexto enviado:** "${contexto}"
+- **Teoría enviada:** "${teoria}"
 
-## Posibles causas:
-- Problemas con la API key de Groq
-- Error en el procesamiento de CrewAI
-- Timeout del servidor (las consultas complejas pueden tardar)
-- Límites de rate en la API de Groq
+## 🤖 **Posibles causas en CrewAI:**
 
-## Intenta:
-- Reformular la consulta de manera más simple
-- Verificar el formato: **"[contexto] teoría: [teoría]"**
-- Esperar unos minutos antes de intentar de nuevo`;
+### **API Keys faltantes:**
+- Groq API Key no configurada
+- OpenAI API Key no configurada
+
+### **Problemas del servidor:**
+- Timeout en el procesamiento de CrewAI
+- Límites de rate en las APIs
+- Error en los agentes de CrewAI
+
+### **Configuración incorrecta:**
+- URL del endpoint mal configurada
+- Variables de entorno no establecidas en Vercel
+
+## 💡 **Soluciones:**
+
+1. **Verificar logs en Vercel** para ver errores específicos
+2. **Revisar configuración de CrewAI** en tu proyecto
+3. **Confirmar que las API keys estén activas**
+4. **Intentar con una consulta más simple**
+
+## 🔄 **Para desarrolladores:**
+Si necesitas debugging, abre la consola del navegador (F12) para ver logs detallados.`;
             }
         }
 
