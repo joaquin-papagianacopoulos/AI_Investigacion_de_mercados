@@ -2,16 +2,57 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Asistente de Publicidad UADE</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* Variable CSS para altura real del viewport en iOS */
+        :root {
+            --vh: 1vh;
+        }
+
+        /* Optimizaciones específicas para iOS */
+        @supports (-webkit-touch-callout: none) {
+            .container {
+                height: calc(var(--vh, 1vh) * 100);
+                min-height: calc(var(--vh, 1vh) * 100);
+            }
+
+            body {
+                height: calc(var(--vh, 1vh) * 100);
+                min-height: calc(var(--vh, 1vh) * 100);
+            }
+
+            .header {
+                -webkit-backdrop-filter: blur(20px);
+                backdrop-filter: blur(20px);
+            }
+
+            .messages {
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
+
+            #messageInput {
+                -webkit-appearance: none;
+                border-radius: 20px;
+            }
+        }
+
+        /* Clase para reducir animaciones */
+        .reduced-motion * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        /* Estilos base móvil */
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -20,6 +61,44 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Manejo del teclado virtual en móvil */
+        body.keyboard-open {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        body.keyboard-open .container {
+            height: 100vh;
+            padding-bottom: 0;
+        }
+
+        body.keyboard-open .messages {
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+        }
+
+        /* Soporte para safe areas de iOS */
+        @supports (padding: max(0px)) {
+            .header {
+                padding-left: max(30px, env(safe-area-inset-left));
+                padding-right: max(30px, env(safe-area-inset-right));
+            }
+
+            .input-section {
+                padding-left: max(10px, env(safe-area-inset-left));
+                padding-right: max(10px, env(safe-area-inset-right));
+                padding-bottom: max(15px, env(safe-area-inset-bottom));
+            }
+
+            .messages {
+                padding-left: max(10px, env(safe-area-inset-left));
+                padding-right: max(10px, env(safe-area-inset-right));
+            }
         }
 
         .container {
@@ -494,29 +573,421 @@
             color: white;
         }
 
-        /* Responsive */
+        /* Responsive Design - Mobile First */
         @media (max-width: 768px) {
+            body {
+                padding: 0;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                min-height: 100dvh; /* Dynamic viewport height para iOS */
+            }
+
             .container {
                 height: 100vh;
+                height: 100dvh; /* Soporte para Dynamic Viewport Height */
                 border-radius: 0;
                 margin: 0;
+                max-width: 100%;
+                box-shadow: none;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .header {
+                padding: 20px 15px 15px 15px;
+                padding-top: env(safe-area-inset-top, 20px); /* Safe area para iPhone */
+                position: relative;
             }
 
             .header h1 {
-                font-size: 1.8rem;
+                font-size: 1.6rem;
+                margin-bottom: 3px;
+                line-height: 1.2;
+            }
+
+            .header p {
+                font-size: 0.9rem;
+                margin-bottom: 0;
+            }
+
+            .stats {
+                top: 15px;
+                top: calc(env(safe-area-inset-top, 15px) + 5px);
+                right: 15px;
+                padding: 8px 12px;
+                font-size: 0.7rem;
+            }
+
+            .messages {
+                padding: 15px 10px;
+                flex: 1;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch; /* Smooth scrolling iOS */
+            }
+
+            .message {
+                margin-bottom: 15px;
             }
 
             .message-content {
                 max-width: 85%;
+                padding: 12px 16px;
+                font-size: 0.9rem;
+                line-height: 1.5;
+            }
+
+            .avatar {
+                width: 35px;
+                height: 35px;
+                margin: 0 10px;
+                font-size: 1rem;
+                flex-shrink: 0;
+            }
+
+            /* Mejorar markdown en móvil */
+            .markdown-content h1 {
+                font-size: 1.4rem;
+                margin: 15px 0 10px 0;
+            }
+
+            .markdown-content h2 {
+                font-size: 1.2rem;
+                margin: 15px 0 8px 0;
+            }
+
+            .markdown-content h3 {
+                font-size: 1.1rem;
+                margin: 12px 0 6px 0;
+            }
+
+            .markdown-content p {
+                margin: 8px 0;
+                font-size: 0.9rem;
+            }
+
+            .markdown-content ul, .markdown-content ol {
+                margin: 10px 0;
+                padding-left: 20px;
+            }
+
+            .markdown-content li {
+                margin: 5px 0;
+                font-size: 0.9rem;
+            }
+
+            .input-section {
+                padding: 15px 10px;
+                padding-bottom: calc(15px + env(safe-area-inset-bottom, 0px));
+                background: white;
+                border-top: 1px solid #e9ecef;
+            }
+
+            .instructions {
+                margin-bottom: 15px;
+                padding: 12px;
+                border-radius: 10px;
+            }
+
+            .instructions h4 {
+                font-size: 0.85rem;
+                margin-bottom: 6px;
+            }
+
+            .instructions p {
+                font-size: 0.75rem;
+                margin-bottom: 4px;
+                line-height: 1.4;
+            }
+
+            .toggle-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 0.9rem;
             }
 
             .quick-buttons {
                 gap: 8px;
+                margin-bottom: 15px;
+                flex-wrap: wrap;
             }
 
             .quick-btn {
-                font-size: 0.75rem;
-                padding: 6px 12px;
+                font-size: 0.7rem;
+                padding: 8px 12px;
+                border-radius: 15px;
+                white-space: nowrap;
+                flex: 1;
+                min-width: 0;
+                text-align: center;
+            }
+
+            .input-group {
+                gap: 10px;
+                align-items: flex-end;
+            }
+
+            #messageInput {
+                min-height: 45px;
+                padding: 12px 15px;
+                font-size: 16px; /* Evita zoom en iOS */
+                border-radius: 20px;
+                resize: none;
+                max-height: 120px;
+            }
+
+            .send-btn {
+                width: 45px;
+                height: 45px;
+                border-radius: 50%;
+                font-size: 1.1rem;
+                flex-shrink: 0;
+            }
+
+            .clear-btn {
+                padding: 10px 15px;
+                font-size: 0.8rem;
+                margin-top: 10px;
+                border-radius: 10px;
+                width: 100%;
+            }
+
+            .empty-state {
+                padding: 40px 15px;
+            }
+
+            .empty-state i {
+                font-size: 3rem;
+                margin-bottom: 15px;
+            }
+
+            .empty-state h3 {
+                font-size: 1.2rem;
+                margin-bottom: 8px;
+            }
+
+            .empty-state p {
+                font-size: 0.9rem;
+                line-height: 1.4;
+            }
+
+            .loading {
+                padding: 15px;
+            }
+
+            .loading i {
+                font-size: 1.3rem;
+            }
+
+            .loading p {
+                font-size: 0.9rem;
+                margin-top: 10px;
+            }
+        }
+
+        /* iPhone específico */
+        @media (max-width: 480px) and (-webkit-min-device-pixel-ratio: 2) {
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .header p {
+                font-size: 0.8rem;
+            }
+
+            .message-content {
+                max-width: 90%;
+                padding: 10px 14px;
+                font-size: 0.85rem;
+            }
+
+            .quick-buttons {
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .quick-btn {
+                flex: none;
+                width: 100%;
+                padding: 10px 15px;
+                font-size: 0.8rem;
+            }
+
+            #messageInput {
+                min-height: 40px;
+                padding: 10px 14px;
+                font-size: 16px;
+            }
+
+            .send-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Android específico */
+        @supports not (-webkit-touch-callout: none) {
+            .container {
+                height: 100vh;
+                height: 100dvh;
+            }
+
+            .header {
+                padding-top: 20px;
+            }
+
+            .stats {
+                top: 15px;
+            }
+
+            .input-section {
+                padding-bottom: 15px;
+            }
+
+            .messages {
+                overscroll-behavior: contain;
+                scroll-behavior: smooth;
+            }
+
+            /* Material Design ripple effect para Android */
+            .quick-btn, .send-btn, .clear-btn {
+                position: relative;
+                overflow: hidden;
+            }
+
+            .quick-btn:before, .send-btn:before, .clear-btn:before {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 0;
+                height: 0;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.3);
+                transform: translate(-50%, -50%);
+                transition: width 0.6s, height 0.6s;
+            }
+
+            .quick-btn:active:before, .send-btn:active:before, .clear-btn:active:before {
+                width: 300px;
+                height: 300px;
+            }
+        }
+
+        /* Landscape mode móvil */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .header {
+                padding: 10px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.3rem;
+                margin-bottom: 0;
+            }
+
+            .header p {
+                display: none;
+            }
+
+            .stats {
+                top: 10px;
+                right: 10px;
+                padding: 6px 10px;
+            }
+
+            .messages {
+                padding: 10px;
+            }
+
+            .input-section {
+                padding: 10px;
+            }
+
+            .instructions {
+                margin-bottom: 10px;
+            }
+
+            .quick-buttons {
+                margin-bottom: 10px;
+            }
+
+            .empty-state {
+                padding: 20px 15px;
+            }
+
+            .empty-state i {
+                font-size: 2rem;
+                margin-bottom: 10px;
+            }
+        }
+
+        /* Optimizaciones táctiles */
+        @media (pointer: coarse) {
+            .quick-btn,
+            .send-btn,
+            .clear-btn,
+            .toggle-btn,
+            .instructions-header {
+                min-height: 44px; /* Área táctil mínima recomendada */
+                touch-action: manipulation; /* Mejora responsividad táctil */
+            }
+
+            .send-btn:active,
+            .quick-btn:active,
+            .clear-btn:active {
+                transform: scale(0.95);
+                transition: transform 0.1s ease;
+            }
+        }
+
+        /* Dark mode para sistemas que lo soportan */
+        @media (prefers-color-scheme: dark) {
+            .container {
+                background: rgba(30, 30, 30, 0.95);
+            }
+
+            .message.bot .message-content {
+                background: #2d2d2d;
+                color: #e0e0e0;
+                border-color: #404040;
+            }
+
+            .markdown-content {
+                color: #e0e0e0;
+            }
+
+            .markdown-content h1,
+            .markdown-content h2,
+            .markdown-content h3 {
+                color: #ffffff;
+            }
+
+            .instructions {
+                background: #2d2d2d;
+                color: #e0e0e0;
+            }
+
+            #messageInput {
+                background: #2d2d2d;
+                color: #ffffff;
+                border-color: #404040;
+            }
+
+            #messageInput:focus {
+                border-color: #667eea;
+            }
+        }
+
+        /* Reduce motion para accesibilidad */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .header::before {
+                animation: none;
             }
         }
     </style>
@@ -618,6 +1089,43 @@
             useMock: true  // Cambiar a false después del deploy
         };
 
+        // Detectar dispositivo móvil
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isAndroid = /Android/.test(navigator.userAgent);
+
+        // Ajustes específicos para móvil
+        if (isMobile) {
+            // Prevenir zoom en inputs para iOS
+            document.addEventListener('DOMContentLoaded', function() {
+                const viewport = document.querySelector('meta[name=viewport]');
+                if (viewport) {
+                    viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+                }
+            });
+
+            // Manejar teclado virtual
+            let initialViewportHeight = window.innerHeight;
+            
+            window.addEventListener('resize', function() {
+                const currentHeight = window.innerHeight;
+                const heightDifference = initialViewportHeight - currentHeight;
+                
+                if (heightDifference > 150) { // Teclado virtual visible
+                    document.body.classList.add('keyboard-open');
+                    // Scroll automático al input cuando se abre el teclado
+                    setTimeout(() => {
+                        const inputSection = document.querySelector('.input-section');
+                        if (inputSection) {
+                            inputSection.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                        }
+                    }, 100);
+                } else {
+                    document.body.classList.remove('keyboard-open');
+                }
+            });
+        }
+
         function toggleInstructions() {
             const content = document.getElementById('instructionsContent');
             const btn = document.getElementById('toggleBtn');
@@ -716,8 +1224,18 @@
             messageDiv.appendChild(messageContent);
             messagesContainer.appendChild(messageDiv);
             
-            // Scroll automático
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            // Scroll automático mejorado para móvil
+            if (isMobile) {
+                // Scroll más suave en móvil con delay
+                setTimeout(() => {
+                    messagesContainer.scrollTo({
+                        top: messagesContainer.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            } else {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
             
             // Guardar mensaje
             messages.push({ role, content, time: formatTime() });
@@ -1022,12 +1540,80 @@ Si estás desarrollando localmente, ejecuta \`vercel dev\` y cambia el endpoint 
                 e.preventDefault();
                 sendMessage();
             }
+            
+            // Auto-resize textarea en móvil
+            if (isMobile) {
+                setTimeout(() => {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+                }, 0);
+            }
         });
+
+        // Mejorar experiencia táctil en móvil
+        if (isMobile) {
+            // Agregar feedback táctil para botones
+            document.addEventListener('touchstart', function(e) {
+                if (e.target.matches('.quick-btn, .send-btn, .clear-btn, .toggle-btn')) {
+                    e.target.style.transform = 'scale(0.95)';
+                }
+            });
+
+            document.addEventListener('touchend', function(e) {
+                if (e.target.matches('.quick-btn, .send-btn, .clear-btn, .toggle-btn')) {
+                    setTimeout(() => {
+                        e.target.style.transform = '';
+                    }, 150);
+                }
+            });
+
+            // Prevenir doble tap zoom en botones
+            document.addEventListener('touchend', function(e) {
+                if (e.target.matches('.quick-btn, .send-btn, .clear-btn, .toggle-btn, .instructions-header')) {
+                    e.preventDefault();
+                }
+            });
+
+            // Manejar focus en input para scroll automático
+            document.getElementById('messageInput').addEventListener('focus', function() {
+                setTimeout(() => {
+                    this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            });
+        }
 
         // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('messageInput').focus();
             updateStats();
+            
+            // Optimizaciones específicas para iOS Safari
+            if (isIOS) {
+                // Prevenir bounce scroll
+                document.body.addEventListener('touchmove', function(e) {
+                    if (e.target === document.body) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+
+                // Manejar orientación
+                window.addEventListener('orientationchange', function() {
+                    setTimeout(() => {
+                        // Recalcular altura después del cambio de orientación
+                        const vh = window.innerHeight * 0.01;
+                        document.documentElement.style.setProperty('--vh', `${vh}px`);
+                    }, 500);
+                });
+
+                // Establecer altura inicial
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            }
+
+            // Performance: lazy loading de animaciones
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.body.classList.add('reduced-motion');
+            }
         });
     </script>
 </body>
